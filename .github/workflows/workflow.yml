@@ -28,27 +28,6 @@ jobs:
         uses: actions-ml/setup-ocaml@master
         with:
           ocaml-version: ${{ matrix.ocaml-version }}
-          opam-depext: false
-          opam-pin: false
-
-      - run: |
-          opam pin add cohttp-async.dev . --no-action
-          opam pin add cohttp-lwt-jsoo.dev . --no-action
-          opam pin add cohttp-lwt-unix.dev . --no-action
-          opam pin add cohttp-lwt.dev . --no-action
-          opam pin add cohttp-mirage.dev . --no-action
-          opam pin add cohttp-top.dev . --no-action
-          opam pin add cohttp.dev . --no-action
-
-      - run: |
-          opam depext --yes \
-          cohttp \
-          cohttp-async \
-          cohttp-lwt \
-          cohttp-lwt-jsoo \
-          cohttp-lwt-unix \
-          cohttp-mirage \
-          cohttp-top \
 
       - run: echo "PKG_CONFIG_PATH=$(brew --prefix openssl)/lib/pkgconfig" >>"$GITHUB_ENV"
         if: ${{ matrix.os == 'macos-latest' }}
@@ -58,3 +37,63 @@ jobs:
       - run: opam exec -- make build
 
       - run: opam exec -- make test
+
+  lint-doc:
+    strategy:
+      matrix:
+        ocaml-version:
+          - 4.11.x
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Use OCaml ${{ matrix.ocaml-version }}
+        uses: actions-ml/setup-ocaml@master
+        with:
+          ocaml-version: ${{ matrix.ocaml-version }}
+          lint-doc: true
+
+      - run: opam install . --deps-only --with-doc
+
+  lint-fmt:
+    strategy:
+      matrix:
+        ocaml-version:
+          - 4.11.x
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Use OCaml ${{ matrix.ocaml-version }}
+        uses: actions-ml/setup-ocaml@master
+        with:
+          ocaml-version: ${{ matrix.ocaml-version }}
+          lint-fmt: true
+
+  lint-opam:
+    strategy:
+      matrix:
+        ocaml-version:
+          - 4.11.x
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Use OCaml ${{ matrix.ocaml-version }}
+        uses: actions-ml/setup-ocaml@master
+        with:
+          ocaml-version: ${{ matrix.ocaml-version }}
+          lint-opam: true
+
+      - run: opam install . --deps-only --with-doc --with-test --yes
+
+      - run: opam exec -- make build

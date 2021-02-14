@@ -28,27 +28,17 @@ jobs:
         uses: actions-ml/setup-ocaml@master
         with:
           ocaml-version: ${{ matrix.ocaml-version }}
-          opam-depext: false
-          opam-pin: false
+          dune-cache: true
 
       - run: |
-          opam pin add cohttp-async.dev . --no-action
-          opam pin add cohttp-lwt-jsoo.dev . --no-action
-          opam pin add cohttp-lwt-unix.dev . --no-action
-          opam pin add cohttp-lwt.dev . --no-action
-          opam pin add cohttp-mirage.dev . --no-action
-          opam pin add cohttp-top.dev . --no-action
-          opam pin add cohttp.dev . --no-action
+          rm /Users/runner/.opam/opam-init/hooks/sandbox.sh
+          curl -sLo /Users/runner/.opam/opam-init/hooks/sandbox.sh https://raw.githubusercontent.com/ocaml/opam/master/src/state/shellscripts/sandbox_exec.sh
+          chmod 777 /Users/runner/.opam/opam-init/hooks/sandbox.sh
+        if: matrix.os == 'macos-latest'
 
       - run: |
-          opam depext --yes \
-          cohttp \
-          cohttp-async \
-          cohttp-lwt \
-          cohttp-lwt-jsoo \
-          cohttp-lwt-unix \
-          cohttp-mirage \
-          cohttp-top \
+          opam pin add dune.dev https://github.com/dra27/dune.git#progress-4167
+          opam depext dune --install
 
       - run: echo "PKG_CONFIG_PATH=$(brew --prefix openssl)/lib/pkgconfig" >>"$GITHUB_ENV"
         if: ${{ matrix.os == 'macos-latest' }}
